@@ -1,0 +1,51 @@
+# .github/workflows/docker-ci.yml
+name: Docker CI/CD
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events to the 'main' branch
+  # Change 'main' to 'master' if your default branch is named 'master'
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab in GitHub
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build-and-push:
+    # The type of runner (virtual machine) that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Step 1: Checks-out your repository code onto the runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Logs in to Docker Hub using the secrets
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }} # Uses the secret for username
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}   # Uses the secret for PAT
+
+      # Step 3: Set up Docker Buildx (recommended for modern Docker builds)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 4: Build and Push the Docker image
+      - name: Build and Push Docker image
+        id: docker_build # Assigns an ID to this step to reference its outputs
+        uses: docker/build-push-action@v5
+        with:
+          context: .       # Path to your Dockerfile context (current directory)
+          file: ./Dockerfile # Path to your Dockerfile
+          push: true       # Instructs the action to push the image to Docker Hub
+          tags: |          # Defines the tags for your image
+            ${{ secrets.DOCKER_HUB_USERNAME }}/my-flask-app:latest # Tag with 'latest'
+            ${{ secrets.DOCKER_HUB_USERNAME }}/my-flask-app:${{ github.sha }} # Tag with unique commit SHA
+
+      # Step 5: Optional - Verify the pushed image digest
+      - name: Verify pushed image (optional)
+        run: echo "Image pushed with digest ${{ steps.docker_build.outputs.digest }}"
