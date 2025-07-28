@@ -36,15 +36,15 @@ jobs:
 
       # Step 4: Build and Push the Docker image
       - name: Build and Push Docker image
-        id: docker_build # Assigns an ID to this step to reference its outputs
+        id: docker_build 
         uses: docker/build-push-action@v5
         with:
-          context: .       # Path to your Dockerfile context (current directory)
-          file: ./Dockerfile # Path to your Dockerfile
-          push: true       # Instructs the action to push the image to Docker Hub
-          tags: |          # Defines the tags for your image
-            ${{ secrets.DOCKER_HUB_USERNAME }}/my-flask-app:latest # Tag with 'latest'
-            ${{ secrets.DOCKER_HUB_USERNAME }}/my-flask-app:${{ github.sha }} # Tag with unique commit SHA
+          context: .       
+          file: ./Dockerfile 
+          push: true       
+          tags: |          
+            ${{ secrets.DOCKER_HUB_USERNAME }}/my-flask-app:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/my-flask-app:${{ github.sha }}
 
       # Step 5: Optional - Verify the pushed image digest
       - name: Verify pushed image (optional)
